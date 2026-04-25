@@ -25,6 +25,13 @@ $messages = array(
 		<?php endforeach; ?>
 	</nav>
 	<div class="snap-ccb-admin__panel">
-		<?php include SNAP_CCB_CHURCH_CONNECT_PATH . 'includes/Admin/Views/' . $tab . '.php'; ?>
+		<?php
+		$view_file = SNAP_CCB_CHURCH_CONNECT_PATH . 'includes/Admin/Views/' . $tab . '.php';
+		if (is_readable($view_file)) {
+			include $view_file;
+		} else {
+			echo '<p>' . esc_html__('The requested admin tab could not be loaded.', 'snap-ccb-church-connect') . '</p>';
+		}
+		?>
 	</div>
 </div>

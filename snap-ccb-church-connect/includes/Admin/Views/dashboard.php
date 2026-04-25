@@ -3,14 +3,16 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-$ccb_events = new WP_Query(array(
+$ccb_events = new \WP_Query(array(
 	'post_type'      => 'church_event',
 	'post_status'    => 'publish',
 	'fields'         => 'ids',
 	'posts_per_page' => 1,
+	'no_found_rows'  => false,
 	'meta_query'     => array(array('key' => '_church_connect_provider', 'value' => 'ccb')),
 ));
 $published = (int) $ccb_events->found_posts;
+wp_reset_postdata();
 $next_sync = wp_next_scheduled(SNAP_CCB_CHURCH_CONNECT_CRON_HOOK);
 ?>
 <h2><?php echo esc_html__('Dashboard', 'snap-ccb-church-connect'); ?></h2>

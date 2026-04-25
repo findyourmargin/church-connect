@@ -42,7 +42,11 @@ class Helpers {
 			add_option(SNAP_CCB_CHURCH_CONNECT_OPTION, self::default_options());
 			return;
 		}
-		update_option(SNAP_CCB_CHURCH_CONNECT_OPTION, wp_parse_args($options, self::default_options()));
+
+		$merged = wp_parse_args($options, self::default_options());
+		if ($merged !== $options) {
+			update_option(SNAP_CCB_CHURCH_CONNECT_OPTION, $merged);
+		}
 	}
 
 	public static function get_options() {

@@ -42,7 +42,12 @@ class AdminMenu {
 			$tab = 'dashboard';
 		}
 
-		include SNAP_CCB_CHURCH_CONNECT_PATH . 'includes/Admin/Views/admin-page.php';
+		$admin_page = SNAP_CCB_CHURCH_CONNECT_PATH . 'includes/Admin/Views/admin-page.php';
+		if (! is_readable($admin_page)) {
+			wp_die(esc_html__('Snap! CCB Church Connect admin view files are missing.', 'snap-ccb-church-connect'));
+		}
+
+		include $admin_page;
 	}
 
 	public function handle_sync_now() {
