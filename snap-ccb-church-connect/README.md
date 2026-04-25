@@ -25,6 +25,8 @@ Enter these in **Connection**:
 - API Password
 - Optional HTTPS API Base URL override
 
+Use CCB API credentials, not Pushpay API credentials. Pushpay API credentials are for Pushpay services and will not authenticate against the legacy CCB endpoint at `ccbchurch.com/api.php`.
+
 The normalized API URL is `https://{account}.ccbchurch.com/api.php`.
 
 Constants can override saved settings:

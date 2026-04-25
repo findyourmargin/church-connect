@@ -9,6 +9,9 @@ $constant_password = defined('SNAP_CCB_CHURCH_CONNECT_PASSWORD') && SNAP_CCB_CHU
 ?>
 <h2><?php echo esc_html__('Connection', 'snap-ccb-church-connect'); ?></h2>
 <p><?php echo esc_html__('CCB credentials are stored server-side only. They are never exposed to JavaScript, public REST responses, frontend output, or logs.', 'snap-ccb-church-connect'); ?></p>
+<div class="notice notice-warning inline">
+	<p><strong><?php echo esc_html__('Use CCB API credentials here, not Pushpay API credentials.', 'snap-ccb-church-connect'); ?></strong> <?php echo esc_html__('Pushpay API credentials are for Pushpay services and will not authenticate against the legacy CCB API endpoint at ccbchurch.com/api.php.', 'snap-ccb-church-connect'); ?></p>
+</div>
 <p><strong><?php echo esc_html__('Status:', 'snap-ccb-church-connect'); ?></strong> <?php echo esc_html($options['connection_status']); ?></p>
 <form method="post" action="options.php">
 	<?php settings_fields('snap_ccb_church_connect_settings'); ?>
@@ -37,4 +40,4 @@ $constant_password = defined('SNAP_CCB_CHURCH_CONNECT_PASSWORD') && SNAP_CCB_CHU
 	<input type="hidden" name="action" value="snap_ccb_church_connect_test_connection">
 	<?php submit_button(__('Test Connection', 'snap-ccb-church-connect'), 'secondary', 'submit', false); ?>
 </form>
-<p class="description"><?php echo esc_html__('The API user needs access to api_status, public_calendar_listing, and event_profile. event_profiles and campus_list are optional future services.', 'snap-ccb-church-connect'); ?></p>
+<p class="description"><?php echo esc_html__('The CCB API user needs access to api_status, public_calendar_listing, and event_profile. event_profiles and campus_list are optional future services.', 'snap-ccb-church-connect'); ?></p>
