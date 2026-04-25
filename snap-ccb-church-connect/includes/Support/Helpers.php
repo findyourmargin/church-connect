@@ -60,7 +60,10 @@ class Helpers {
 	}
 
 	public static function update_options(array $updates) {
-		update_option(SNAP_CCB_CHURCH_CONNECT_OPTION, array_merge(self::get_options(), $updates));
+		wp_cache_delete(SNAP_CCB_CHURCH_CONNECT_OPTION, 'options');
+		$updated = update_option(SNAP_CCB_CHURCH_CONNECT_OPTION, array_merge(self::get_options(), $updates));
+		wp_cache_delete(SNAP_CCB_CHURCH_CONNECT_OPTION, 'options');
+		return $updated;
 	}
 
 	public static function get_account() {

@@ -3,6 +3,36 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
+use SnapChurchConnect\CCB\Logging\Logger;
+use SnapChurchConnect\CCB\Support\Helpers;
+
+$options = Helpers::get_options();
+$recent_logs = Logger::get_entries();
+$connection_status = $options['connection_status'];
+$last_sync_time = $options['last_sync_time'];
+$last_sync_status = $options['last_sync_status'];
+$last_sync_created = $options['last_sync_created'];
+$last_sync_updated = $options['last_sync_updated'];
+$last_sync_skipped = $options['last_sync_skipped'];
+$last_sync_failed = $options['last_sync_failed'];
+
+foreach ($recent_logs as $entry) {
+	if ('not_tested' === $connection_status && isset($entry['message']) && 'Connection test succeeded.' === $entry['message']) {
+		$connection_status = 'connected';
+	}
+
+	if (! $last_sync_time && isset($entry['message']) && 'CCB event sync finished.' === $entry['message']) {
+		$last_sync_time = isset($entry['timestamp']) ? $entry['timestamp'] : '';
+		$last_sync_status = 'completed';
+		if (! empty($entry['context']) && is_array($entry['context'])) {
+			$last_sync_created = isset($entry['context']['created']) ? (int) $entry['context']['created'] : 0;
+			$last_sync_updated = isset($entry['context']['updated']) ? (int) $entry['context']['updated'] : 0;
+			$last_sync_skipped = isset($entry['context']['skipped']) ? (int) $entry['context']['skipped'] : 0;
+			$last_sync_failed = isset($entry['context']['failed']) ? (int) $entry['context']['failed'] : 0;
+		}
+	}
+}
+
 $ccb_events = new \WP_Query(array(
 	'post_type'      => 'church_event',
 	'post_status'    => 'publish',
@@ -17,16 +47,16 @@ $next_sync = wp_next_scheduled(SNAP_CCB_CHURCH_CONNECT_CRON_HOOK);
 ?>
 <h2><?php echo esc_html__('Dashboard', 'snap-ccb-church-connect'); ?></h2>
 <div class="snap-ccb-grid">
-	<div class="snap-ccb-card"><strong><?php echo esc_html__('Connection', 'snap-ccb-church-connect'); ?></strong><span><?php echo esc_html($options['connection_status']); ?></span></div>
+	<div class="snap-ccb-card"><strong><?php echo esc_html__('Connection', 'snap-ccb-church-connect'); ?></strong><span><?php echo esc_html($connection_status); ?></span></div>
 	<div class="snap-ccb-card"><strong><?php echo esc_html__('Automatic Sync', 'snap-ccb-church-connect'); ?></strong><span><?php echo $options['auto_sync_enabled'] ? esc_html__('Enabled', 'snap-ccb-church-connect') : esc_html__('Disabled', 'snap-ccb-church-connect'); ?></span></div>
 	<div class="snap-ccb-card"><strong><?php echo esc_html__('Synced Events', 'snap-ccb-church-connect'); ?></strong><span><?php echo esc_html((string) $published); ?></span></div>
 	<div class="snap-ccb-card"><strong><?php echo esc_html__('Next Sync', 'snap-ccb-church-connect'); ?></strong><span><?php echo $next_sync ? esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $next_sync)) : esc_html__('Not scheduled', 'snap-ccb-church-connect'); ?></span></div>
 </div>
 <h3><?php echo esc_html__('Last Sync', 'snap-ccb-church-connect'); ?></h3>
 <p>
-	<?php echo esc_html__('Time:', 'snap-ccb-church-connect'); ?> <?php echo esc_html($options['last_sync_time'] ? $options['last_sync_time'] : __('Never', 'snap-ccb-church-connect')); ?><br>
-	<?php echo esc_html__('Status:', 'snap-ccb-church-connect'); ?> <?php echo esc_html($options['last_sync_status'] ? $options['last_sync_status'] : __('Not run', 'snap-ccb-church-connect')); ?><br>
-	<?php echo esc_html(sprintf('Created: %d | Updated: %d | Skipped: %d | Failed: %d', $options['last_sync_created'], $options['last_sync_updated'], $options['last_sync_skipped'], $options['last_sync_failed'])); ?>
+	<?php echo esc_html__('Time:', 'snap-ccb-church-connect'); ?> <?php echo esc_html($last_sync_time ? $last_sync_time : __('Never', 'snap-ccb-church-connect')); ?><br>
+	<?php echo esc_html__('Status:', 'snap-ccb-church-connect'); ?> <?php echo esc_html($last_sync_status ? $last_sync_status : __('Not run', 'snap-ccb-church-connect')); ?><br>
+	<?php echo esc_html(sprintf('Created: %d | Updated: %d | Skipped: %d | Failed: %d', $last_sync_created, $last_sync_updated, $last_sync_skipped, $last_sync_failed)); ?>
 </p>
 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
 	<?php wp_nonce_field('snap_ccb_church_connect_sync_now'); ?>

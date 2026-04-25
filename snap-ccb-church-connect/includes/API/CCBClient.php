@@ -105,6 +105,17 @@ class CCBClient {
 			);
 		}
 
+		$error_message = $this->extract_error_message($parsed['data']);
+		if ($error_message) {
+			Logger::error('api', 'CCB API returned an application error.', array('service' => $service, 'message' => $error_message));
+			return array(
+				'success'    => false,
+				'message'    => $error_message,
+				'data'       => $parsed['data'],
+				'rate_limit' => $this->last_rate_limit,
+			);
+		}
+
 		return array(
 			'success'    => true,
 			'message'    => 'OK',
@@ -168,6 +179,42 @@ class CCBClient {
 			if (isset($headers[$key])) {
 				$this->last_rate_limit[$key] = sanitize_text_field((string) $headers[$key]);
 			}
+		}
+	}
+
+	private function extract_error_message($data) {
+		if (! is_array($data) || empty($data['response']['errors'])) {
+			return '';
+		}
+
+		$errors = $data['response']['errors'];
+		$messages = array();
+		$this->collect_error_messages($errors, $messages);
+
+		return implode(' | ', array_slice(array_unique(array_filter($messages)), 0, 5));
+	}
+
+	private function collect_error_messages($value, array &$messages) {
+		if (! is_array($value)) {
+			$text = sanitize_text_field((string) $value);
+			if ($text) {
+				$messages[] = $text;
+			}
+			return;
+		}
+
+		if (isset($value['@text'])) {
+			$text = sanitize_text_field((string) $value['@text']);
+			if ($text) {
+				$messages[] = $text;
+			}
+		}
+
+		foreach ($value as $key => $child) {
+			if ('@attributes' === $key) {
+				continue;
+			}
+			$this->collect_error_messages($child, $messages);
 		}
 	}
 }

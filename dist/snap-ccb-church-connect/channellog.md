@@ -7,3 +7,4 @@
 - Released 0.1.1 admin hardening: avoid unnecessary option rewrites on page load, guard admin view includes, and make dashboard queries explicit.
 - Released 0.1.2 diagnostics: log safe public calendar response shape, candidate paths, and item keys without storing credentials or leader/contact values.
 - Released 0.1.3 diagnostics: log safe response-node keys and attributes to distinguish empty CCB responses from unmapped event structures.
+- Released 0.1.4: treat CCB application-level `<errors>` responses as sync failures, log safe error text, clear option cache after status updates, and make dashboard status resilient to stale options.
