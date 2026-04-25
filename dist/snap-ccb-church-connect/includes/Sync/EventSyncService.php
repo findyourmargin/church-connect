@@ -194,6 +194,8 @@ class EventSyncService {
 		$context = array(
 			'items_found'      => count($items),
 			'top_level_keys'   => implode(',', $this->array_keys_for_log($data)),
+			'response_keys'    => implode(',', $this->array_keys_for_log($this->find_value($data, 'response'))),
+			'response_attrs'   => $this->attributes_for_log($this->find_value($data, 'response')),
 			'candidate_paths'  => implode(',', array_slice($this->candidate_paths($items), 0, 10)),
 		);
 
@@ -234,6 +236,19 @@ class EventSyncService {
 		}
 
 		return array_slice(array_unique($keys), 0, 30);
+	}
+
+	private function attributes_for_log($value) {
+		if (! is_array($value) || empty($value['@attributes']) || ! is_array($value['@attributes'])) {
+			return '';
+		}
+
+		$pairs = array();
+		foreach ($value['@attributes'] as $key => $attribute_value) {
+			$pairs[] = sanitize_key((string) $key) . ':' . sanitize_text_field((string) $attribute_value);
+		}
+
+		return implode(',', array_slice($pairs, 0, 20));
 	}
 
 	private function candidate_paths(array $items) {

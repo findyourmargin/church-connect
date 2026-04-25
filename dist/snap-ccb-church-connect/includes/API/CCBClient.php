@@ -99,6 +99,7 @@ class CCBClient {
 				'CCB public_calendar_listing response shape.',
 				array(
 					'top_level_keys' => is_array($parsed['data']) ? implode(',', array_slice(array_map('sanitize_key', array_keys($parsed['data'])), 0, 30)) : '',
+					'response_keys'  => is_array($parsed['data']) && isset($parsed['data']['response']) && is_array($parsed['data']['response']) ? implode(',', array_slice(array_map('sanitize_key', array_keys($parsed['data']['response'])), 0, 30)) : '',
 					'body_bytes'     => strlen($body),
 				)
 			);
