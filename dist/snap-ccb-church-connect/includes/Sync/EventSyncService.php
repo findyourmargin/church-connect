@@ -32,7 +32,6 @@ class EventSyncService {
 		}
 
 		$items = $this->extract_calendar_items($response['data']);
-		$this->log_calendar_diagnostics($response['data'], $items);
 		foreach ($items as $item) {
 			$result = $this->upsert_event($item);
 			isset($counts[$result]) ? $counts[$result]++ : $counts['failed']++;
@@ -178,7 +177,6 @@ class EventSyncService {
 		}
 
 		if (isset($value['event_name']) || isset($value['date'])) {
-			$value['_diagnostic_path'] = $path;
 			$items[] = $value;
 		}
 
@@ -188,78 +186,6 @@ class EventSyncService {
 			}
 			$this->collect_item_arrays($child, $items, $path . '.' . sanitize_key((string) $key));
 		}
-	}
-
-	private function log_calendar_diagnostics($data, array $items) {
-		$context = array(
-			'items_found'      => count($items),
-			'top_level_keys'   => implode(',', $this->array_keys_for_log($data)),
-			'response_keys'    => implode(',', $this->array_keys_for_log($this->find_value($data, 'response'))),
-			'response_attrs'   => $this->attributes_for_log($this->find_value($data, 'response')),
-			'candidate_paths'  => implode(',', array_slice($this->candidate_paths($items), 0, 10)),
-		);
-
-		if (! empty($items[0]) && is_array($items[0])) {
-			$context['first_item_keys'] = implode(',', $this->array_keys_for_log($items[0]));
-			$context['first_item_child_keys'] = implode(',', $this->nested_keys_for_log($items[0]));
-		}
-
-		Logger::info('sync', 'CCB calendar listing diagnostics.', $context);
-	}
-
-	private function array_keys_for_log($value) {
-		if (! is_array($value)) {
-			return array();
-		}
-
-		return array_slice(
-			array_map(
-				static function ($key) {
-					return sanitize_key((string) $key);
-				},
-				array_keys($value)
-			),
-			0,
-			30
-		);
-	}
-
-	private function nested_keys_for_log(array $value) {
-		$keys = array();
-		foreach ($value as $key => $child) {
-			if (! is_array($child) || '@attributes' === $key) {
-				continue;
-			}
-			foreach (array_keys($child) as $child_key) {
-				$keys[] = sanitize_key((string) $key) . ':' . sanitize_key((string) $child_key);
-			}
-		}
-
-		return array_slice(array_unique($keys), 0, 30);
-	}
-
-	private function attributes_for_log($value) {
-		if (! is_array($value) || empty($value['@attributes']) || ! is_array($value['@attributes'])) {
-			return '';
-		}
-
-		$pairs = array();
-		foreach ($value['@attributes'] as $key => $attribute_value) {
-			$pairs[] = sanitize_key((string) $key) . ':' . sanitize_text_field((string) $attribute_value);
-		}
-
-		return implode(',', array_slice($pairs, 0, 20));
-	}
-
-	private function candidate_paths(array $items) {
-		$paths = array();
-		foreach ($items as $item) {
-			if (isset($item['_diagnostic_path'])) {
-				$paths[] = sanitize_text_field((string) $item['_diagnostic_path']);
-			}
-		}
-
-		return array_values(array_unique($paths));
 	}
 
 	private function find_value($array, ...$keys) {

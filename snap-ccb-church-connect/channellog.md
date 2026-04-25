@@ -9,3 +9,4 @@
 - Released 0.1.3 diagnostics: log safe response-node keys and attributes to distinguish empty CCB responses from unmapped event structures.
 - Released 0.1.4: treat CCB application-level `<errors>` responses as sync failures, log safe error text, clear option cache after status updates, and make dashboard status resilient to stale options.
 - Released 0.1.5: clarified that the connection form requires CCB API credentials, not Pushpay API credentials.
+- Released 0.1.6: removed verbose calendar response diagnostics after CCB XML mapping was confirmed.

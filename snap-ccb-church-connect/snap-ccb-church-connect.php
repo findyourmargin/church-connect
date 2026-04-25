@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Snap! CCB Church Connect
  * Description: Sync Church Community Builder / Pushpay ChMS calendar events into WordPress using native church_event content for Bricks, Elementor, shortcodes, and app-ready REST endpoints.
- * Version: 0.1.5
+ * Version: 0.1.6
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: Snap! Church Connect
@@ -17,7 +17,7 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-define('SNAP_CCB_CHURCH_CONNECT_VERSION', '0.1.5');
+define('SNAP_CCB_CHURCH_CONNECT_VERSION', '0.1.6');
 define('SNAP_CCB_CHURCH_CONNECT_FILE', __FILE__);
 define('SNAP_CCB_CHURCH_CONNECT_PATH', plugin_dir_path(__FILE__));
 define('SNAP_CCB_CHURCH_CONNECT_URL', plugin_dir_url(__FILE__));

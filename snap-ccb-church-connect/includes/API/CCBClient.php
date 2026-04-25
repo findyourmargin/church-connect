@@ -93,18 +93,6 @@ class CCBClient {
 			return $parsed;
 		}
 
-		if ('public_calendar_listing' === $service) {
-			Logger::info(
-				'api',
-				'CCB public_calendar_listing response shape.',
-				array(
-					'top_level_keys' => is_array($parsed['data']) ? implode(',', array_slice(array_map('sanitize_key', array_keys($parsed['data'])), 0, 30)) : '',
-					'response_keys'  => is_array($parsed['data']) && isset($parsed['data']['response']) && is_array($parsed['data']['response']) ? implode(',', array_slice(array_map('sanitize_key', array_keys($parsed['data']['response'])), 0, 30)) : '',
-					'body_bytes'     => strlen($body),
-				)
-			);
-		}
-
 		$error_message = $this->extract_error_message($parsed['data']);
 		if ($error_message) {
 			Logger::error('api', 'CCB API returned an application error.', array('service' => $service, 'message' => $error_message));
