@@ -1,0 +1,35 @@
+.snap-pco-admin__panel {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	margin-top: 16px;
+	padding: 20px;
+	max-width: 1100px;
+}
+
+.snap-pco-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 12px;
+	margin: 16px 0;
+}
+
+.snap-pco-card {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 14px;
+	background: #f6f7f7;
+}
+
+.snap-pco-card strong,
+.snap-pco-card span {
+	display: block;
+}
+
+.snap-pco-card span {
+	font-size: 18px;
+	margin-top: 6px;
+}
+
+.snap-pco-logs code {
+	white-space: normal;
+}
