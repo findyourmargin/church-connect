@@ -93,6 +93,17 @@ class CCBClient {
 			return $parsed;
 		}
 
+		if ('public_calendar_listing' === $service) {
+			Logger::info(
+				'api',
+				'CCB public_calendar_listing response shape.',
+				array(
+					'top_level_keys' => is_array($parsed['data']) ? implode(',', array_slice(array_map('sanitize_key', array_keys($parsed['data'])), 0, 30)) : '',
+					'body_bytes'     => strlen($body),
+				)
+			);
+		}
+
 		return array(
 			'success'    => true,
 			'message'    => 'OK',
