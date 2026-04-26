@@ -32,6 +32,7 @@ class EventSyncService {
 		}
 
 		$items = $this->extract_calendar_items($response['data']);
+		$items = $this->filter_items_by_selected_calendars($items);
 		if (Helpers::get_option('merge_multiday_occurrences', 1)) {
 			$before_merge = count($items);
 			$items = $this->merge_multiday_occurrences($items);
@@ -247,6 +248,38 @@ class EventSyncService {
 		}
 
 		return array_merge($passthrough, $merged);
+	}
+
+	private function filter_items_by_selected_calendars(array $items) {
+		$selected = Helpers::get_option('selected_calendars', array());
+		if (! is_array($selected) || empty($selected)) {
+			return $items;
+		}
+
+		$selected = array_map('sanitize_key', $selected);
+		$filtered = array();
+		foreach ($items as $item) {
+			$key = $this->calendar_key_for_item($item);
+			if ($key && in_array($key, $selected, true)) {
+				$filtered[] = $item;
+			}
+		}
+
+		if (count($filtered) !== count($items)) {
+			Logger::info('sync', 'Filtered CCB events by selected calendars.', array('before' => count($items), 'after' => count($filtered)));
+		}
+
+		return $filtered;
+	}
+
+	private function calendar_key_for_item(array $item) {
+		foreach (array('grouping_name', 'group_type', 'event_type', 'group_name') as $field) {
+			$value = $this->text($this->find_value($item, $field));
+			if ($value) {
+				return sanitize_key($value);
+			}
+		}
+		return '';
 	}
 
 	private function merge_group_key(array $item) {

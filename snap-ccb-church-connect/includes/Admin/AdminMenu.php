@@ -111,6 +111,93 @@ class AdminMenu {
 		exit;
 	}
 
+	public function handle_refresh_calendars() {
+		$this->verify_admin_action('snap_ccb_church_connect_refresh_calendars');
+
+		$start = current_time('Y-m-d');
+		$end = gmdate('Y-m-d', strtotime('+' . max(1, absint(Helpers::get_option('sync_window_months', 6))) . ' months'));
+		$response = (new CCBClient())->get_public_calendar_listing($start, $end);
+		$notice = 'calendars_failed';
+
+		if (! empty($response['success'])) {
+			$items = array();
+			$this->collect_calendar_items($response['data'], $items);
+			$calendars = $this->calendar_options_from_items($items);
+			Helpers::update_options(array('available_calendars' => $calendars));
+			Logger::info('admin', 'Available CCB calendars refreshed.', array('count' => count($calendars)));
+			$notice = 'calendars_refreshed';
+		} else {
+			Logger::error('admin', 'Failed to refresh CCB calendars.', array('message' => isset($response['message']) ? $response['message'] : 'Unknown error'));
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'            => 'snap-ccb-church-connect',
+					'tab'             => 'sync-settings',
+					'snap_ccb_notice' => $notice,
+				),
+				admin_url('admin.php')
+			)
+		);
+		exit;
+	}
+
+	private function collect_calendar_items($value, array &$items) {
+		if (! is_array($value)) {
+			return;
+		}
+
+		if (isset($value['event_name']) || isset($value['date'])) {
+			$items[] = $value;
+		}
+
+		foreach ($value as $key => $child) {
+			if ('@attributes' === $key || '@text' === $key) {
+				continue;
+			}
+			$this->collect_calendar_items($child, $items);
+		}
+	}
+
+	private function calendar_options_from_items(array $items) {
+		$calendars = array();
+		foreach ($items as $item) {
+			$label = $this->calendar_label_for_item($item);
+			if (! $label) {
+				continue;
+			}
+
+			$key = sanitize_key($label);
+			if ($key) {
+				$calendars[$key] = $label;
+			}
+		}
+
+		asort($calendars, SORT_NATURAL | SORT_FLAG_CASE);
+		return $calendars;
+	}
+
+	private function calendar_label_for_item(array $item) {
+		foreach (array('grouping_name', 'group_type', 'event_type', 'group_name') as $field) {
+			$value = $this->calendar_text(isset($item[$field]) ? $item[$field] : '');
+			if ($value) {
+				return $value;
+			}
+		}
+		return '';
+	}
+
+	private function calendar_text($value) {
+		if (is_array($value)) {
+			if (isset($value['@text'])) {
+				return sanitize_text_field((string) $value['@text']);
+			}
+			return '';
+		}
+		return sanitize_text_field((string) $value);
+	}
+
 	private function verify_admin_action($action) {
 		if (! current_user_can('manage_options')) {
 			wp_die(esc_html__('You do not have permission to perform this action.', 'snap-ccb-church-connect'));

@@ -57,6 +57,8 @@ Use **Sync Now** from the Dashboard or Sync Settings tab. The sync calls `public
 
 Sync Settings can also limit imports to non-repeating events. When **Sync only non-repeating events** is enabled, the plugin checks CCB `event_profile` recurrence data and skips events that have recurrence information.
 
+Use **Refresh Available Calendars** in Sync Settings to discover CCB calendar/grouping options from the public calendar listing response. After refresh, select one or more calendars in **Calendars to Sync**. Leaving the selection empty syncs all discovered calendars.
+
 ## Automatic Sync
 
 Enable automatic sync in Sync Settings. Frequencies include every 15 minutes, every 30 minutes, hourly, twice daily, and daily. WP-Cron is scheduled only when enabled and unscheduled on deactivation.

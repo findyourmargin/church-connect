@@ -62,6 +62,12 @@ class Settings {
 			$clean['sync_window_months'] = max(1, min(24, absint($raw['sync_window_months'])));
 		}
 
+		if (isset($raw['selected_calendars']) && is_array($raw['selected_calendars'])) {
+			$clean['selected_calendars'] = array_values(array_unique(array_filter(array_map('sanitize_key', $raw['selected_calendars']))));
+		} elseif (array_key_exists('selected_calendars', $raw)) {
+			$clean['selected_calendars'] = array();
+		}
+
 		if (isset($raw['expired_event_handling'])) {
 			$expired = sanitize_key($raw['expired_event_handling']);
 			$clean['expired_event_handling'] = in_array($expired, array('keep', 'draft', 'trash'), true) ? $expired : 'keep';

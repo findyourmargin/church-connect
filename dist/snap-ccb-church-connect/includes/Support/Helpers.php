@@ -17,6 +17,8 @@ class Helpers {
 			'sync_frequency'         => 'hourly',
 			'sync_post_status'       => 'publish',
 			'sync_window_months'     => 6,
+			'available_calendars'    => array(),
+			'selected_calendars'     => array(),
 			'fetch_event_profiles'   => 1,
 			'sync_non_repeating_only' => 0,
 			'merge_multiday_occurrences' => 1,

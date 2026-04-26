@@ -10,6 +10,8 @@ $messages = array(
 	'connection_success'  => __('Connection test succeeded.', 'snap-ccb-church-connect'),
 	'connection_failed'   => __('Connection test failed. Check credentials and logs.', 'snap-ccb-church-connect'),
 	'logs_cleared'        => __('Logs cleared.', 'snap-ccb-church-connect'),
+	'calendars_refreshed' => __('Available CCB calendars refreshed.', 'snap-ccb-church-connect'),
+	'calendars_failed'    => __('Could not refresh CCB calendars. Check connection settings and logs.', 'snap-ccb-church-connect'),
 );
 ?>
 <div class="wrap snap-ccb-admin">
