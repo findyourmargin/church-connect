@@ -2,6 +2,8 @@
 if (! defined('ABSPATH')) {
 	exit;
 }
+
+$options = wp_parse_args((array) $options, SnapChurchConnect\CCB\Support\Helpers::default_options());
 ?>
 <h2><?php echo esc_html__('Display', 'snap-ccb-church-connect'); ?></h2>
 <form method="post" action="options.php">
