@@ -41,6 +41,7 @@ class Plugin {
 		add_action('admin_post_snap_ccb_church_connect_test_connection', array($admin_menu, 'handle_test_connection'));
 		add_action('admin_post_snap_ccb_church_connect_clear_logs', array($admin_menu, 'handle_clear_logs'));
 		add_action('admin_post_snap_ccb_church_connect_refresh_calendars', array($admin_menu, 'handle_refresh_calendars'));
+		add_action('admin_post_snap_ccb_church_connect_delete_events', array($admin_menu, 'handle_delete_events'));
 		add_action('rest_api_init', array($rest, 'register_routes'));
 		add_action('init', array($shortcodes, 'register'));
 		add_action('init', array($single_event, 'register'));

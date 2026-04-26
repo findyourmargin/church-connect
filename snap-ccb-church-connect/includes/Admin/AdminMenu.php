@@ -143,6 +143,73 @@ class AdminMenu {
 		exit;
 	}
 
+	public function handle_delete_events() {
+		$this->verify_admin_action('snap_ccb_church_connect_delete_events');
+
+		$confirm = isset($_POST['confirm_delete']) ? sanitize_text_field(wp_unslash($_POST['confirm_delete'])) : '';
+		if ('DELETE' !== $confirm) {
+			Logger::warning('admin', 'Delete synced CCB events confirmation failed.');
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'            => 'snap-ccb-church-connect',
+						'tab'             => 'advanced',
+						'snap_ccb_notice' => 'delete_confirm_failed',
+					),
+					admin_url('admin.php')
+				)
+			);
+			exit;
+		}
+
+		$deleted = 0;
+		do {
+			$query = new \WP_Query(array(
+				'post_type'      => 'church_event',
+				'post_status'    => 'any',
+				'fields'         => 'ids',
+				'posts_per_page' => 100,
+				'no_found_rows'  => true,
+				'meta_query'     => array(
+					array(
+						'key'   => '_church_connect_provider',
+						'value' => 'ccb',
+					),
+				),
+			));
+
+			foreach ($query->posts as $post_id) {
+				if (wp_delete_post((int) $post_id, true)) {
+					$deleted++;
+				}
+			}
+		} while (! empty($query->posts));
+
+		Helpers::update_options(array(
+			'last_sync_time'    => '',
+			'last_sync_status'  => 'events_deleted',
+			'last_sync_created' => 0,
+			'last_sync_updated' => 0,
+			'last_sync_skipped' => 0,
+			'last_sync_failed'  => 0,
+		));
+
+		Logger::warning('admin', 'Deleted synced CCB events from WordPress.', array('deleted' => $deleted));
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'            => 'snap-ccb-church-connect',
+					'tab'             => 'advanced',
+					'snap_ccb_notice' => 'events_deleted',
+					'deleted'         => $deleted,
+				),
+				admin_url('admin.php')
+			)
+		);
+		exit;
+	}
+
 	private function collect_calendar_items($value, array &$items) {
 		if (! is_array($value)) {
 			return;

@@ -12,6 +12,8 @@ $messages = array(
 	'logs_cleared'        => __('Logs cleared.', 'snap-ccb-church-connect'),
 	'calendars_refreshed' => __('Available CCB calendars refreshed.', 'snap-ccb-church-connect'),
 	'calendars_failed'    => __('Could not refresh CCB calendars. Check connection settings and logs.', 'snap-ccb-church-connect'),
+	'events_deleted'      => __('Synced CCB events deleted. You can run Sync Now for a fresh import.', 'snap-ccb-church-connect'),
+	'delete_confirm_failed' => __('Events were not deleted because the confirmation text did not match.', 'snap-ccb-church-connect'),
 );
 ?>
 <div class="wrap snap-ccb-admin">
