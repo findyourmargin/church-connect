@@ -32,7 +32,7 @@ class EventSyncService {
 		}
 
 		$items = $this->extract_calendar_items($response['data']);
-		if (Helpers::get_option('merge_multiday_occurrences', 0)) {
+		if (Helpers::get_option('merge_multiday_occurrences', 1)) {
 			$before_merge = count($items);
 			$items = $this->merge_multiday_occurrences($items);
 			if (count($items) !== $before_merge) {
