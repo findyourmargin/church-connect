@@ -18,6 +18,7 @@ class Helpers {
 			'sync_post_status'       => 'publish',
 			'sync_window_months'     => 6,
 			'fetch_event_profiles'   => 1,
+			'sync_non_repeating_only' => 0,
 			'merge_multiday_occurrences' => 1,
 			'expired_event_handling' => 'keep',
 			'default_events_per_page'=> 6,

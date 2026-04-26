@@ -58,8 +58,14 @@ class EventSyncService {
 		}
 
 		$profile = array();
-		if ($event_id && Helpers::get_option('fetch_event_profiles', 1)) {
+		$sync_non_repeating_only = (bool) Helpers::get_option('sync_non_repeating_only', 0);
+		if ($event_id && (Helpers::get_option('fetch_event_profiles', 1) || $sync_non_repeating_only)) {
 			$profile = $this->get_profile($event_id);
+		}
+
+		if ($sync_non_repeating_only && $this->is_repeating_event($item, $profile)) {
+			Logger::info('sync', 'Skipped repeating CCB event because non-repeating-only sync is enabled.', array('event_id' => $event_id));
+			return 'skipped';
 		}
 
 		$event = $this->normalize_event($item, $profile, $event_id);
@@ -176,6 +182,26 @@ class EventSyncService {
 
 		$this->profile_cache[$event_id] = $response['data'];
 		return $response['data'];
+	}
+
+	private function is_repeating_event(array $item, array $profile) {
+		$recurrence_values = array(
+			$this->find_value($profile, 'recurrence_description'),
+			$this->find_value($profile, 'recurrence'),
+			$this->find_value($profile, 'recurrence_frequency'),
+			$this->find_value($profile, 'repeats'),
+			$this->find_value($item, 'recurrence_description'),
+			$this->find_value($item, 'recurrence'),
+		);
+
+		foreach ($recurrence_values as $value) {
+			$value = strtolower($this->text($value));
+			if ($value && ! in_array($value, array('none', 'no', 'false', '0'), true)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function merge_multiday_occurrences(array $items) {

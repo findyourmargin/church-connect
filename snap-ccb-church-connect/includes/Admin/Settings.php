@@ -71,6 +71,10 @@ class Settings {
 			$clean['fetch_event_profiles'] = ! empty($raw['fetch_event_profiles']) ? 1 : 0;
 		}
 
+		if (array_key_exists('sync_non_repeating_only', $raw)) {
+			$clean['sync_non_repeating_only'] = ! empty($raw['sync_non_repeating_only']) ? 1 : 0;
+		}
+
 		if (array_key_exists('merge_multiday_occurrences', $raw)) {
 			$clean['merge_multiday_occurrences'] = ! empty($raw['merge_multiday_occurrences']) ? 1 : 0;
 		}

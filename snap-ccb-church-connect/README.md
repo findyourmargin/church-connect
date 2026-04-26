@@ -55,6 +55,8 @@ Reference: https://designccb.s3.amazonaws.com/helpdesk/files/official_docs/api.h
 
 Use **Sync Now** from the Dashboard or Sync Settings tab. The sync calls `public_calendar_listing` for today through the configured future window, then optionally calls `event_profile` for each unique event ID.
 
+Sync Settings can also limit imports to non-repeating events. When **Sync only non-repeating events** is enabled, the plugin checks CCB `event_profile` recurrence data and skips events that have recurrence information.
+
 ## Automatic Sync
 
 Enable automatic sync in Sync Settings. Frequencies include every 15 minutes, every 30 minutes, hourly, twice daily, and daily. WP-Cron is scheduled only when enabled and unscheduled on deactivation.
