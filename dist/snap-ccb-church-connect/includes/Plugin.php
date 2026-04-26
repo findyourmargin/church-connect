@@ -2,6 +2,7 @@
 namespace SnapChurchConnect\CCB;
 
 use SnapChurchConnect\CCB\Admin\AdminMenu;
+use SnapChurchConnect\CCB\Admin\EventDetailsMetaBox;
 use SnapChurchConnect\CCB\Admin\Settings;
 use SnapChurchConnect\CCB\Content\ContentTypes;
 use SnapChurchConnect\CCB\Content\MetaFields;
@@ -23,6 +24,7 @@ class Plugin {
 		$meta_fields   = new MetaFields();
 		$settings      = new Settings();
 		$admin_menu    = new AdminMenu($settings);
+		$event_details = new EventDetailsMetaBox();
 		$rest          = new EventsController();
 		$shortcodes    = new Shortcodes();
 		$scheduler     = new Scheduler();
@@ -32,6 +34,7 @@ class Plugin {
 		add_action('init', array($meta_fields, 'register'));
 		add_action('admin_init', array($settings, 'register'));
 		add_action('admin_menu', array($admin_menu, 'register'));
+		add_action('add_meta_boxes_church_event', array($event_details, 'register'));
 		add_action('admin_post_snap_ccb_church_connect_sync_now', array($admin_menu, 'handle_sync_now'));
 		add_action('admin_post_snap_ccb_church_connect_test_connection', array($admin_menu, 'handle_test_connection'));
 		add_action('admin_post_snap_ccb_church_connect_clear_logs', array($admin_menu, 'handle_clear_logs'));
@@ -57,7 +60,7 @@ class Plugin {
 	}
 
 	public function enqueue_admin_assets($hook) {
-		if ('toplevel_page_snap-ccb-church-connect' !== $hook) {
+		if ('toplevel_page_snap-ccb-church-connect' !== $hook && 'post.php' !== $hook && 'post-new.php' !== $hook) {
 			return;
 		}
 

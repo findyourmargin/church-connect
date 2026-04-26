@@ -33,3 +33,11 @@
 .snap-ccb-logs code {
 	white-space: normal;
 }
+
+.snap-ccb-event-details th {
+	width: 180px;
+}
+
+.snap-ccb-event-details code {
+	white-space: normal;
+}

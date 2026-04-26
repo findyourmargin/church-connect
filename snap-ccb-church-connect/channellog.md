@@ -10,3 +10,4 @@
 - Released 0.1.4: treat CCB application-level `<errors>` responses as sync failures, log safe error text, clear option cache after status updates, and make dashboard status resilient to stale options.
 - Released 0.1.5: clarified that the connection form requires CCB API credentials, not Pushpay API credentials.
 - Released 0.1.6: removed verbose calendar response diagnostics after CCB XML mapping was confirmed.
+- Released 0.1.7: added a Church Event Details meta box for synced event fields in the WordPress editor.

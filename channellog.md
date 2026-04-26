@@ -13,3 +13,4 @@
 - Released Snap! CCB Church Connect 0.1.4 to surface CCB application-level errors and make Dashboard status resilient when host object caching serves stale options.
 - Released Snap! CCB Church Connect 0.1.5 to clarify that legacy CCB API credentials are required and Pushpay API credentials will not authenticate against ccbchurch.com/api.php.
 - Released Snap! CCB Church Connect 0.1.6 to remove temporary calendar response diagnostics after successful sync verification.
+- Released Snap! CCB Church Connect 0.1.7 with a Church Event Details meta box for synced event data in the editor.
