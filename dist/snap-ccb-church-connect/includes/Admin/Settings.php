@@ -71,6 +71,10 @@ class Settings {
 			$clean['fetch_event_profiles'] = ! empty($raw['fetch_event_profiles']) ? 1 : 0;
 		}
 
+		if (array_key_exists('merge_multiday_occurrences', $raw)) {
+			$clean['merge_multiday_occurrences'] = ! empty($raw['merge_multiday_occurrences']) ? 1 : 0;
+		}
+
 		if (isset($raw['default_events_per_page'])) {
 			$clean['default_events_per_page'] = max(1, min(100, absint($raw['default_events_per_page'])));
 		}
@@ -94,6 +98,10 @@ class Settings {
 
 		if (array_key_exists('show_image', $raw)) {
 			$clean['show_image'] = ! empty($raw['show_image']) ? 1 : 0;
+		}
+
+		if (array_key_exists('require_image', $raw)) {
+			$clean['require_image'] = ! empty($raw['require_image']) ? 1 : 0;
 		}
 
 		if (array_key_exists('show_location', $raw)) {

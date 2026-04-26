@@ -21,6 +21,7 @@ class Shortcodes {
 				'limit'    => $options['default_events_per_page'],
 				'layout'   => $options['default_layout'],
 				'featured' => '',
+				'image_only' => '',
 				'campus'   => '',
 				'category' => '',
 				'ministry' => '',
@@ -60,6 +61,22 @@ class Shortcodes {
 			);
 		}
 
+		$image_only = '' !== $atts['image_only'] ? filter_var($atts['image_only'], FILTER_VALIDATE_BOOLEAN) : ! empty($options['require_image']);
+		if ($image_only) {
+			$args['meta_query'][] = array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_thumbnail_id',
+					'compare' => 'EXISTS',
+				),
+				array(
+					'key'     => 'church_event_image_url',
+					'value'   => '',
+					'compare' => '!=',
+				),
+			);
+		}
+
 		$query = new \WP_Query($args);
 		if (! $query->have_posts()) {
 			return '<div class="church-connect-events church-connect-events--empty">' . esc_html__('No upcoming events found.', 'snap-ccb-church-connect') . '</div>';
@@ -79,7 +96,7 @@ class Shortcodes {
 	private function render_event_card($post_id, array $options) {
 		$start_ts = (int) get_post_meta($post_id, 'church_event_start_ts', true);
 		$location = get_post_meta($post_id, 'church_event_location', true);
-		$image = get_post_meta($post_id, 'church_event_image_url', true);
+		$image = has_post_thumbnail($post_id) ? get_the_post_thumbnail_url($post_id, 'large') : get_post_meta($post_id, 'church_event_image_url', true);
 		$url = get_post_meta($post_id, 'church_event_external_url', true);
 		$url = $url ? $url : get_post_meta($post_id, 'church_event_registration_url', true);
 		$url = $url ? $url : get_permalink($post_id);

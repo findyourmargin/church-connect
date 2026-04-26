@@ -69,13 +69,23 @@ ccb:{event_id}:{date}:{start_time}:{end_time}
 
 That key is stored in `_church_connect_external_instance_id` to prevent duplicate posts while allowing recurring occurrences to remain separate events.
 
+Sync Settings includes an optional **Merge consecutive CCB occurrences into one event** control. When enabled, the plugin combines consecutive daily occurrences with the same CCB event ID, title, time, and location into one `church_event`, extends the end date to the final occurrence, and drafts the extra duplicate occurrence posts.
+
 ## Shortcode
 
 ```text
 [church_connect_events limit="6" layout="cards"]
 ```
 
-Attributes: `limit`, `layout`, `featured`, `campus`, `category`, and `ministry`.
+Attributes: `limit`, `layout`, `featured`, `image_only`, `campus`, `category`, and `ministry`.
+
+To show only events with either a WordPress featured image or synced CCB image URL:
+
+```text
+[church_connect_events image_only="true"]
+```
+
+The same image-only behavior can be enabled globally from the Display tab.
 
 ## REST Endpoints
 

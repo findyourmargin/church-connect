@@ -32,6 +32,14 @@ class EventSyncService {
 		}
 
 		$items = $this->extract_calendar_items($response['data']);
+		if (Helpers::get_option('merge_multiday_occurrences', 0)) {
+			$before_merge = count($items);
+			$items = $this->merge_multiday_occurrences($items);
+			if (count($items) !== $before_merge) {
+				Logger::info('sync', 'Merged consecutive CCB multi-day occurrences.', array('before' => $before_merge, 'after' => count($items)));
+			}
+		}
+
 		foreach ($items as $item) {
 			$result = $this->upsert_event($item);
 			isset($counts[$result]) ? $counts[$result]++ : $counts['failed']++;
@@ -85,6 +93,7 @@ class EventSyncService {
 			}
 			$this->update_meta($post_id, $event, $hash);
 			$this->assign_terms($post_id, $event);
+			$this->retire_merged_occurrence_posts($event, $post_id);
 			return 'updated';
 		}
 
@@ -96,13 +105,16 @@ class EventSyncService {
 
 		$this->update_meta((int) $result, $event, $hash);
 		$this->assign_terms((int) $result, $event);
+		$this->retire_merged_occurrence_posts($event, (int) $result);
 		return 'created';
 	}
 
 	private function normalize_event(array $item, array $profile, $event_id) {
+		$is_merged = ! empty($item['_merged_end_date']);
 		$timezone = $this->text($this->find_value($profile, 'timezone'));
 		$timezone = $timezone ? $timezone : Helpers::site_timezone();
 		$date = $this->text($this->find_value($item, 'date'));
+		$end_date = $is_merged ? $this->text($item['_merged_end_date']) : $date;
 		$start_time = $this->text($this->find_value($item, 'start_time'));
 		$end_time = $this->text($this->find_value($item, 'end_time'));
 
@@ -111,10 +123,10 @@ class EventSyncService {
 			Logger::warning('sync', 'CCB event missing end_time; using start_time fallback.', array('event_id' => $event_id));
 		}
 
-		$start = $this->text($this->find_value($profile, 'start_datetime'));
-		$end = $this->text($this->find_value($profile, 'end_datetime'));
+		$start = $is_merged ? '' : $this->text($this->find_value($profile, 'start_datetime'));
+		$end = $is_merged ? '' : $this->text($this->find_value($profile, 'end_datetime'));
 		$start = $start ? $start : trim($date . ' ' . $start_time);
-		$end = $end ? $end : trim($date . ' ' . $end_time);
+		$end = $end ? $end : trim($end_date . ' ' . $end_time);
 		$start_ts = Helpers::parse_timestamp($start, $timezone);
 		$end_ts = Helpers::parse_timestamp($end, $timezone);
 		$description = $this->text($this->find_value($profile, 'description'));
@@ -126,6 +138,7 @@ class EventSyncService {
 			'provider'       => 'ccb',
 			'external_id'    => sanitize_text_field($event_id),
 			'instance_id'    => sanitize_text_field('ccb:' . $event_id . ':' . $date . ':' . $start_time . ':' . $end_time),
+			'merged_occurrence_keys' => isset($item['_merged_occurrence_keys']) && is_array($item['_merged_occurrence_keys']) ? array_map('sanitize_text_field', $item['_merged_occurrence_keys']) : array(),
 			'name'           => $this->prefer($this->find_value($profile, 'name'), $this->find_value($item, 'event_name'), __('Untitled Event', 'snap-ccb-church-connect')),
 			'description'    => wp_kses_post($description),
 			'starts_at'      => $start_ts ? gmdate('c', $start_ts) : sanitize_text_field($start),
@@ -163,6 +176,122 @@ class EventSyncService {
 
 		$this->profile_cache[$event_id] = $response['data'];
 		return $response['data'];
+	}
+
+	private function merge_multiday_occurrences(array $items) {
+		$groups = array();
+		$passthrough = array();
+
+		foreach ($items as $item) {
+			$key = $this->merge_group_key($item);
+			$date = $this->text($this->find_value($item, 'date'));
+			if (! $key || ! $date) {
+				$passthrough[] = $item;
+				continue;
+			}
+
+			$groups[$key][] = $item;
+		}
+
+		$merged = array();
+		foreach ($groups as $group_items) {
+			usort(
+				$group_items,
+				function ($a, $b) {
+					$a_date = $this->text($this->find_value($a, 'date'));
+					$b_date = $this->text($this->find_value($b, 'date'));
+					return strcmp($a_date, $b_date);
+				}
+			);
+
+			$sequence = array();
+			foreach ($group_items as $item) {
+				if (empty($sequence) || $this->is_next_day(end($sequence), $item)) {
+					$sequence[] = $item;
+					continue;
+				}
+
+				$merged[] = $this->build_merged_item($sequence);
+				$sequence = array($item);
+			}
+
+			if (! empty($sequence)) {
+				$merged[] = $this->build_merged_item($sequence);
+			}
+		}
+
+		return array_merge($passthrough, $merged);
+	}
+
+	private function merge_group_key(array $item) {
+		$event_id = $this->text($this->find_value($item, 'event_name', '@attributes', 'ccb_id'));
+		if (! $event_id) {
+			$event_id = $this->text($this->find_value($item, 'event_id'));
+		}
+
+		if (! $event_id) {
+			return '';
+		}
+
+		return implode(
+			'|',
+			array(
+				sanitize_key($event_id),
+				sanitize_title($this->text($this->find_value($item, 'event_name'))),
+				sanitize_title($this->text($this->find_value($item, 'location'))),
+				$this->text($this->find_value($item, 'start_time')),
+				$this->text($this->find_value($item, 'end_time')),
+			)
+		);
+	}
+
+	private function is_next_day(array $previous, array $current) {
+		$previous_date = $this->text($this->find_value($previous, 'date'));
+		$current_date = $this->text($this->find_value($current, 'date'));
+		if (! $previous_date || ! $current_date) {
+			return false;
+		}
+
+		$previous_ts = strtotime($previous_date . ' 00:00:00 UTC');
+		$current_ts = strtotime($current_date . ' 00:00:00 UTC');
+		return false !== $previous_ts && false !== $current_ts && 86400 === ($current_ts - $previous_ts);
+	}
+
+	private function build_merged_item(array $sequence) {
+		if (count($sequence) < 2) {
+			return $sequence[0];
+		}
+
+		$first = $sequence[0];
+		$last = $sequence[count($sequence) - 1];
+		$first['_merged_end_date'] = $this->text($this->find_value($last, 'date'));
+		$first['_merged_occurrence_keys'] = array();
+
+		foreach ($sequence as $item) {
+			$key = $this->listing_occurrence_key($item);
+			if ($key) {
+				$first['_merged_occurrence_keys'][] = $key;
+			}
+		}
+
+		return $first;
+	}
+
+	private function listing_occurrence_key(array $item) {
+		$event_id = $this->text($this->find_value($item, 'event_name', '@attributes', 'ccb_id'));
+		if (! $event_id) {
+			$event_id = $this->text($this->find_value($item, 'event_id'));
+		}
+
+		$date = $this->text($this->find_value($item, 'date'));
+		$start_time = $this->text($this->find_value($item, 'start_time'));
+		$end_time = $this->text($this->find_value($item, 'end_time'));
+
+		if (! $event_id || ! $date) {
+			return '';
+		}
+
+		return sanitize_text_field('ccb:' . $event_id . ':' . $date . ':' . $start_time . ':' . $end_time);
 	}
 
 	private function extract_calendar_items($data) {
@@ -286,6 +415,46 @@ class EventSyncService {
 		}
 		if ($event['grouping_name']) {
 			wp_set_object_terms($post_id, $event['grouping_name'], 'church_event_category', false);
+		}
+	}
+
+	private function retire_merged_occurrence_posts(array $event, $kept_post_id) {
+		if (empty($event['merged_occurrence_keys']) || ! is_array($event['merged_occurrence_keys'])) {
+			return;
+		}
+
+		$keys = array_values(array_diff($event['merged_occurrence_keys'], array($event['instance_id'])));
+		if (empty($keys)) {
+			return;
+		}
+
+		$query = new \WP_Query(array(
+			'post_type'      => 'church_event',
+			'post_status'    => array('publish', 'pending', 'draft', 'future', 'private'),
+			'fields'         => 'ids',
+			'posts_per_page' => 100,
+			'meta_query'     => array(
+				array('key' => '_church_connect_provider', 'value' => 'ccb'),
+				array('key' => '_church_connect_external_id', 'value' => $event['external_id']),
+				array('key' => '_church_connect_external_instance_id', 'value' => $keys, 'compare' => 'IN'),
+			),
+		));
+
+		$retired = 0;
+		foreach ($query->posts as $post_id) {
+			$post_id = (int) $post_id;
+			if ($post_id === (int) $kept_post_id) {
+				continue;
+			}
+
+			$result = wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'), true);
+			if (! is_wp_error($result)) {
+				$retired++;
+			}
+		}
+
+		if ($retired > 0) {
+			Logger::info('sync', 'Drafted merged duplicate CCB occurrence posts.', array('event_id' => $event['external_id'], 'retired' => $retired));
 		}
 	}
 
