@@ -18,3 +18,4 @@
 - Released Snap! CCB Church Connect 0.1.8 with an image-only shortcode/display filter and optional sync-time merging for consecutive multi-day CCB occurrences.
 - Released Snap! CCB Church Connect 0.1.9 to harden admin settings defaults and avoid option writes during admin page rendering.
 - Released Snap! CCB Church Connect 0.1.10 with CCB multi-day occurrence merging enabled by default.
+- Released Snap! CCB Church Connect 0.1.11 with frontend single event detail rendering for synced church_event pages.

@@ -37,3 +37,46 @@
 	display: inline-block;
 	margin-top: .5rem;
 }
+
+.church-connect-single-event {
+	display: grid;
+	gap: 1.25rem;
+	margin: 0 0 2rem;
+}
+
+.church-connect-single-event__image {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 4px;
+}
+
+.church-connect-single-event__details {
+	display: grid;
+	gap: .75rem;
+	padding: 1rem 0;
+	border-top: 1px solid currentColor;
+	border-bottom: 1px solid currentColor;
+}
+
+.church-connect-single-event__row {
+	display: grid;
+	grid-template-columns: minmax(7rem, 10rem) 1fr;
+	gap: 1rem;
+	align-items: baseline;
+}
+
+.church-connect-single-event__row strong {
+	font-weight: 700;
+}
+
+.church-connect-single-event__description > :first-child {
+	margin-top: 0;
+}
+
+@media (max-width: 640px) {
+	.church-connect-single-event__row {
+		grid-template-columns: 1fr;
+		gap: .25rem;
+	}
+}

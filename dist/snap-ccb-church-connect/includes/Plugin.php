@@ -8,6 +8,7 @@ use SnapChurchConnect\CCB\Content\ContentTypes;
 use SnapChurchConnect\CCB\Content\MetaFields;
 use SnapChurchConnect\CCB\Content\Taxonomies;
 use SnapChurchConnect\CCB\Frontend\Shortcodes;
+use SnapChurchConnect\CCB\Frontend\SingleEventContent;
 use SnapChurchConnect\CCB\REST\EventsController;
 use SnapChurchConnect\CCB\Sync\Scheduler;
 
@@ -27,6 +28,7 @@ class Plugin {
 		$event_details = new EventDetailsMetaBox();
 		$rest          = new EventsController();
 		$shortcodes    = new Shortcodes();
+		$single_event  = new SingleEventContent();
 		$scheduler     = new Scheduler();
 
 		add_action('init', array($content_types, 'register'));
@@ -40,6 +42,7 @@ class Plugin {
 		add_action('admin_post_snap_ccb_church_connect_clear_logs', array($admin_menu, 'handle_clear_logs'));
 		add_action('rest_api_init', array($rest, 'register_routes'));
 		add_action('init', array($shortcodes, 'register'));
+		add_action('init', array($single_event, 'register'));
 		add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
 		add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
 
