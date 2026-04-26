@@ -90,6 +90,7 @@ class EventSyncService {
 		if ($post_id) {
 			if (get_post_meta($post_id, '_church_connect_sync_hash', true) === $hash) {
 				update_post_meta($post_id, '_church_connect_last_synced_at', Helpers::iso_now());
+				$this->delete_merged_occurrence_posts($event, $post_id);
 				return 'skipped';
 			}
 			$post_data['ID'] = $post_id;
@@ -100,7 +101,7 @@ class EventSyncService {
 			}
 			$this->update_meta($post_id, $event, $hash);
 			$this->assign_terms($post_id, $event);
-			$this->retire_merged_occurrence_posts($event, $post_id);
+			$this->delete_merged_occurrence_posts($event, $post_id);
 			return 'updated';
 		}
 
@@ -112,7 +113,7 @@ class EventSyncService {
 
 		$this->update_meta((int) $result, $event, $hash);
 		$this->assign_terms((int) $result, $event);
-		$this->retire_merged_occurrence_posts($event, (int) $result);
+		$this->delete_merged_occurrence_posts($event, (int) $result);
 		return 'created';
 	}
 
@@ -477,7 +478,7 @@ class EventSyncService {
 		}
 	}
 
-	private function retire_merged_occurrence_posts(array $event, $kept_post_id) {
+	private function delete_merged_occurrence_posts(array $event, $kept_post_id) {
 		if (empty($event['merged_occurrence_keys']) || ! is_array($event['merged_occurrence_keys'])) {
 			return;
 		}
@@ -489,7 +490,7 @@ class EventSyncService {
 
 		$query = new \WP_Query(array(
 			'post_type'      => 'church_event',
-			'post_status'    => array('publish', 'pending', 'draft', 'future', 'private'),
+			'post_status'    => array('publish', 'pending', 'draft', 'future', 'private', 'trash'),
 			'fields'         => 'ids',
 			'posts_per_page' => 100,
 			'meta_query'     => array(
@@ -506,14 +507,13 @@ class EventSyncService {
 				continue;
 			}
 
-			$result = wp_update_post(array('ID' => $post_id, 'post_status' => 'draft'), true);
-			if (! is_wp_error($result)) {
+			if (wp_delete_post($post_id, true)) {
 				$retired++;
 			}
 		}
 
 		if ($retired > 0) {
-			Logger::info('sync', 'Drafted merged duplicate CCB occurrence posts.', array('event_id' => $event['external_id'], 'retired' => $retired));
+			Logger::info('sync', 'Deleted merged duplicate CCB occurrence posts.', array('event_id' => $event['external_id'], 'deleted' => $retired));
 		}
 	}
 
