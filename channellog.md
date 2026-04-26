@@ -23,3 +23,4 @@
 - Released Snap! CCB Church Connect 0.1.13 with CCB calendar discovery and multi-select sync filtering.
 - Released Snap! CCB Church Connect 0.1.14 so merged multi-day events delete extra occurrence posts instead of drafting them.
 - Released Snap! CCB Church Connect 0.1.15 with an Advanced admin action to delete all CCB-synced events for a fresh sync.
+- Released Snap! CCB Church Connect 0.1.16 with Church Events admin list columns for event date, location, status, and provider.

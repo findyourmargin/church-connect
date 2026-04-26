@@ -3,6 +3,7 @@ namespace SnapChurchConnect\CCB;
 
 use SnapChurchConnect\CCB\Admin\AdminMenu;
 use SnapChurchConnect\CCB\Admin\EventDetailsMetaBox;
+use SnapChurchConnect\CCB\Admin\EventListColumns;
 use SnapChurchConnect\CCB\Admin\Settings;
 use SnapChurchConnect\CCB\Content\ContentTypes;
 use SnapChurchConnect\CCB\Content\MetaFields;
@@ -26,6 +27,7 @@ class Plugin {
 		$settings      = new Settings();
 		$admin_menu    = new AdminMenu($settings);
 		$event_details = new EventDetailsMetaBox();
+		$list_columns  = new EventListColumns();
 		$rest          = new EventsController();
 		$shortcodes    = new Shortcodes();
 		$single_event  = new SingleEventContent();
@@ -37,6 +39,7 @@ class Plugin {
 		add_action('admin_init', array($settings, 'register'));
 		add_action('admin_menu', array($admin_menu, 'register'));
 		add_action('add_meta_boxes_church_event', array($event_details, 'register'));
+		add_action('admin_init', array($list_columns, 'register'));
 		add_action('admin_post_snap_ccb_church_connect_sync_now', array($admin_menu, 'handle_sync_now'));
 		add_action('admin_post_snap_ccb_church_connect_test_connection', array($admin_menu, 'handle_test_connection'));
 		add_action('admin_post_snap_ccb_church_connect_clear_logs', array($admin_menu, 'handle_clear_logs'));
